@@ -84,7 +84,9 @@ int main(void) {
 	IVC* image2 = vc_image_new(video.width, video.height, 3, 255);
 	IVC *hsv = vc_image_new(video.width, video.height, 3, 255);
 	IVC *seg = vc_image_new(video.width, video.height, 1, 255);
-	IVC* seg2 = vc_image_new(video.width, video.height, 1, 255);
+	IVC* seg_maca = vc_image_new(video.width, video.height, 1, 255);
+	IVC* seg_final = vc_image_new(video.width, video.height, 1, 255);
+	IVC* morfo = vc_image_new(video.width, video.height, 1, 255);
 
 
 	while (key != 'q') {
@@ -105,14 +107,14 @@ int main(void) {
 		vc_rgb_to_hsv(image2, hsv);
 
 		vc_hsv_segmentation(hsv, seg, 13, 31, 51, 100, 33, 83);
-		vc_binary_open(seg, seg2, 3, 3);
-		
-		vc_binary_to_rgb(seg2, image);
+
+		vc_binary_open(seg, morfo, 3, 3);
+
+		vc_binary_to_rgb(morfo, image);
 		memcpy(frame.data, image->data, video.width* video.height * 3);
-		
-
 
 		
+
 
 		// ------------------------------
 
@@ -144,7 +146,10 @@ int main(void) {
 	vc_image_free(image2);
 	vc_image_free(hsv);
 	vc_image_free(seg);
-	vc_image_free(seg2);
+	vc_image_free(seg_maca);
+	vc_image_free(seg_final);
+	vc_image_free(morfo);
+
 
 	/* Fecha a janela */
 	cv::destroyWindow("VC-VIDEO");
