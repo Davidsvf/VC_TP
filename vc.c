@@ -2186,3 +2186,38 @@ int vc_gray_highpass_filter_enhance(IVC* src, IVC* dst, int gain)
 
 	return 1;
 }
+
+int vc_image_diff(IVC* current, IVC* prev, IVC* diff)
+{
+	unsigned char* datacurrent = (unsigned char*)current->data;
+	unsigned char* dataprev = (unsigned char*)prev->data;
+	unsigned char* datadiff = (unsigned char*)diff->data;
+	int width, height, channels;
+	int x, y, c;
+	long int pos;
+
+	if (current == NULL || prev == NULL || diff == NULL) return 0;
+	if (current->data == NULL || prev->data == NULL || diff->data == NULL) return 0;
+	if (current->width != prev->width || current->width != diff->width) return 0;
+	if (current->height != prev->height || current->height != diff->height) return 0;
+	if (current->channels != prev->channels || current->channels != diff->channels) return 0;
+
+	width = current->width;
+	height = current->height;
+	channels = current->channels;
+
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			for (c = 0; c < channels; c++)
+			{
+				pos = y * current->bytesperline + x * channels + c;
+
+				datadiff[pos] = abs((int)datacurrent[pos] - (int)dataprev[pos]);
+			}
+		}
+	}
+
+	return 1;
+}

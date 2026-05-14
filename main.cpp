@@ -33,6 +33,7 @@ void vc_timer(void) {
 }
 
 
+
 int main(void) {
 	// Vídeo
 	char videofile[20] = "video.avi";
@@ -80,13 +81,17 @@ int main(void) {
 
 	cv::Mat frame;
 
-	IVC *image = vc_image_new(video.width, video.height, 3, 255);
-	IVC* image2 = vc_image_new(video.width, video.height, 3, 255);
-	IVC *hsv = vc_image_new(video.width, video.height, 3, 255);
-	IVC *seg = vc_image_new(video.width, video.height, 1, 255);
+	IVC* image = vc_image_new(video.width, video.height, 3, 255);
+	IVC* rgb = vc_image_new(video.width, video.height, 3, 255);
+	IVC* hsv = vc_image_new(video.width, video.height, 3, 255);
+	IVC* seg_laranja = vc_image_new(video.width, video.height, 1, 255);
 	IVC* seg_maca = vc_image_new(video.width, video.height, 1, 255);
-	IVC* seg_final = vc_image_new(video.width, video.height, 1, 255);
-	IVC* morfo = vc_image_new(video.width, video.height, 1, 255);
+	IVC* seg_defeitos = vc_image_new(video.width, video.height, 1, 255);
+	IVC* seg_clean = vc_image_new(video.width, video.height, 1, 255);
+	IVC* labels = vc_image_new(video.width, video.height, 1, 255);
+
+	cv::Mat mat_seg_laranja(video.height, video.width, CV_8UC1);
+	cv::Mat mat_seg_defeitos(video.height, video.width, CV_8UC1);
 
 
 	while (key != 'q') {
@@ -101,22 +106,62 @@ int main(void) {
 
 		// ----------codigo--------
 
+
 		memcpy(image->data, frame.data, video.width* video.height * 3);
 
-		vc_bgr_to_rgb(image, image2);
-		vc_rgb_to_hsv(image2, hsv);
+		vc_bgr_to_rgb(image, rgb);
 
-		vc_hsv_segmentation(hsv, seg, 13, 31, 51, 100, 33, 83);
+		vc_rgb_to_hsv(rgb, hsv);
 
-		vc_binary_open(seg, morfo, 3, 3);
+		vc_hsv_segmentation(hsv, seg_laranja, 13, 38, 41, 100, 21, 95);
 
-		vc_binary_to_rgb(morfo, image);
-		memcpy(frame.data, image->data, video.width* video.height * 3);
+		/*vc_hsv_segmentation(hsv, seg_laranja, 13, 35, 51, 100, 21, 87);*/
 
-		
+		vc_binary_close(seg_laranja, seg_clean, 3, 3);
 
+		vc_hsv_segmentation(hsv, seg_defeitos, 14, 30, 93, 100, 33, 42);
+
+		int nblobs = 0;
+		OVC* blobs = vc_binary_blob_labelling(seg_clean, labels, &nblobs);
+
+		if (blobs != NULL)
+		{
+			vc_binary_blob_info(labels, blobs, nblobs);
+
+			int nlaranjas_frame = 0;
+
+			for (int i = 0; i < nblobs; i++)
+			{
+				float ratio = (float)blobs[i].width / (float)blobs[i].height;
+
+				if (ratio > 0.80 && ratio < 1.20)
+				{
+					nlaranjas_frame++;
+
+					OVC blob_valido[1];
+					blob_valido[0] = blobs[i];
+
+					vc_draw_bounding_box(image, blob_valido, 1);
+					vc_draw_center_mass(image, blob_valido, 1, 5);
+				}
+			}
+
+			std::cout << "Frame " << video.nframe
+				<< " | Blobs: " << nblobs
+				<< " | Laranjas validas: " << nlaranjas_frame
+				<< std::endl;
+
+			free(blobs);
+		}
+
+			
+		/*vc_binary_to_rgb(seg_clean, rgb);*/
+		// Copiar imagem original anotada para a frame
+		memcpy(frame.data, image->data, video.width * video.height * 3);
 
 		// ------------------------------
+
+
 
 		/* Exemplo de inserção texto na frame */
 		str = std::string("RESOLUCAO: ").append(std::to_string(video.width)).append("x").append(std::to_string(video.height));
@@ -137,18 +182,19 @@ int main(void) {
 
 		/* Sai da aplicação, se o utilizador premir a tecla 'q' */
 		key = cv::waitKey(1);
+
 	}
 
 	/* Para o timer e exibe o tempo decorrido */
 	vc_timer();
 
 	vc_image_free(image);
-	vc_image_free(image2);
+	vc_image_free(rgb);
 	vc_image_free(hsv);
-	vc_image_free(seg);
+	vc_image_free(seg_laranja);
 	vc_image_free(seg_maca);
-	vc_image_free(seg_final);
-	vc_image_free(morfo);
+	vc_image_free(seg_defeitos);
+	vc_image_free(labels);
 
 
 	/* Fecha a janela */
