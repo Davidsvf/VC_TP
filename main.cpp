@@ -105,7 +105,7 @@ int main(void) {
 
 		/*vc_hsv_segmentation(hsv, seg_laranja, 13, 38, 41, 100, 21, 95);*/
 		// Limpeza: close -> open
-		vc_binary_close(seg_laranja, seg_temp, 5, 5);
+		vc_binary_close(seg_laranja, seg_temp, 3,3);
 		vc_binary_open(seg_temp, seg_laranja, 3, 3);
 
 		int nblobs = 0;
@@ -125,13 +125,15 @@ int main(void) {
 				if (ratio < 0.80f || ratio > 1.20f) continue;
 				if (preenchimento < 0.65f) continue;
 
-				nlaranjas_frame++;
-
 				OVC blob_valido[1];
 				blob_valido[0] = blobs[i];
 
-				vc_draw_bounding_box(image, blob_valido, 1);
-				vc_draw_center_mass(image, blob_valido, 1, 5);
+				if (blob_valido[0].area > 500) {
+					vc_draw_bounding_box(image, blob_valido, 1);
+					vc_draw_center_mass(image, blob_valido, 1, 5);	
+					nlaranjas_frame++;
+				}
+			
 			}
 
 			std::cout << "Frame " << video.nframe
