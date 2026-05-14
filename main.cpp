@@ -103,7 +103,6 @@ int main(void) {
 		// Segmentação da laranja
 		vc_hsv_segmentation(hsv, seg_laranja, 13, 38, 41, 100, 21, 95);
 
-		/*vc_hsv_segmentation(hsv, seg_laranja, 13, 38, 41, 100, 21, 95);*/
 		// Limpeza: close -> open
 		vc_binary_close(seg_laranja, seg_temp, 3,3);
 		vc_binary_open(seg_temp, seg_laranja, 3, 3);
@@ -124,22 +123,36 @@ int main(void) {
 
 				if (ratio < 0.80f || ratio > 1.20f) continue;
 				if (preenchimento < 0.65f) continue;
+				if (blobs[i].area < 700) continue;
 
 				OVC blob_valido[1];
 				blob_valido[0] = blobs[i];
 
-				if (blob_valido[0].area > 500) {
-					vc_draw_bounding_box(image, blob_valido, 1);
-					vc_draw_center_mass(image, blob_valido, 1, 5);	
-					nlaranjas_frame++;
-				}
-			
-			}
+				vc_draw_bounding_box(image, blob_valido, 1);
+				vc_draw_center_mass(image, blob_valido, 1, 5);	
+				nlaranjas_frame++;
+	
+				int area = blobs[i].area;
+				int perimetro = blobs[i].perimeter;
 
-			std::cout << "Frame " << video.nframe
-				<< " | Blobs: " << nblobs
-				<< " | Laranjas validas: " << nlaranjas_frame
-				<< std::endl;
+				int bx = blobs[i].x;
+				int by = blobs[i].y;
+
+				memcpy(frame.data, image->data, video.width* video.height * 3);
+
+				str = "AREA: " + std::to_string(area) +
+					" PERIMETRO: " + std::to_string(perimetro);
+
+				cv::putText(frame, str, cv::Point(bx, by - 10),
+					cv::FONT_HERSHEY_SIMPLEX, 0.5,
+					cv::Scalar(0, 0, 0), 2);
+
+				cv::putText(frame, str, cv::Point(bx, by - 10),
+					cv::FONT_HERSHEY_SIMPLEX, 0.5,
+					cv::Scalar(0, 255, 255), 1);
+
+				memcpy(image->data, frame.data, video.width* video.height * 3);
+			}
 
 			free(blobs);
 		}
