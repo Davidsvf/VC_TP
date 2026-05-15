@@ -27,25 +27,6 @@ void vc_timer(void) {
 	}
 }
 
-int contar_defeitos_blob(IVC* seg_defeitos, IVC* labels, int etiqueta)
-{
-	int x, y, area = 0;
-	long int pos;
-
-	for (y = 0; y < labels->height; y++)
-	{
-		for (x = 0; x < labels->width; x++)
-		{
-			pos = y * labels->bytesperline + x;
-
-			if (labels->data[pos] == etiqueta && seg_defeitos->data[pos] == 255)
-				area++;
-		}
-	}
-
-	return area;
-}
-
 int main(void) {
 	char videofile[20] = "video.avi";
 	cv::VideoCapture capture;
@@ -88,6 +69,10 @@ int main(void) {
 	IVC* seg_temp = vc_image_new(video.width, video.height, 1, 255);
 	IVC* labels = vc_image_new(video.width, video.height, 1, 255);
 
+	int total_laranjas = 0;
+	int linha_contagem = video.height / 2;
+	int contou_frame_anterior = 0;
+
 	while (key != 'q') {
 		capture.read(frame);
 
@@ -111,6 +96,7 @@ int main(void) {
 		OVC* blobs = vc_binary_blob_labelling(seg_laranja, labels, &nblobs);
 		
 		int nlaranjas_frame = 0;
+		int contou_nesta_frame = 0;
 
 		if (blobs != NULL)
 		{
@@ -129,33 +115,40 @@ int main(void) {
 				blob_valido[0] = blobs[i];
 
 				vc_draw_bounding_box(image, blob_valido, 1);
-				vc_draw_center_mass(image, blob_valido, 1, 5);	
+				vc_draw_center_mass(image, blob_valido, 1, 5);
+
 				nlaranjas_frame++;
-	
-				int area = blobs[i].area;
-				int perimetro = blobs[i].perimeter;
 
-				int bx = blobs[i].x;
-				int by = blobs[i].y;
+				if (blobs[i].yc >= linha_contagem - 3 && blobs[i].yc <= linha_contagem + 3)
+				{
+					contou_nesta_frame = 1;
+				}
 
-				memcpy(frame.data, image->data, video.width* video.height * 3);
+				memcpy(frame.data, image->data, video.width * video.height * 3);
 
-				str = "AREA: " + std::to_string(area) +
-					" PERIMETRO: " + std::to_string(perimetro);
+				str = "AREA: " + std::to_string(blobs[i].area) +
+					" PERIMETRO: " + std::to_string(blobs[i].perimeter);
 
-				cv::putText(frame, str, cv::Point(bx, by - 10),
+				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
 					cv::Scalar(0, 0, 0), 2);
 
-				cv::putText(frame, str, cv::Point(bx, by - 10),
+				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
 					cv::Scalar(0, 255, 255), 1);
 
-				memcpy(image->data, frame.data, video.width* video.height * 3);
+				memcpy(image->data, frame.data, video.width * video.height * 3);
 			}
 
 			free(blobs);
 		}
+
+		if (contou_nesta_frame && !contou_frame_anterior)
+		{
+			total_laranjas++;
+		}
+
+		contou_frame_anterior = contou_nesta_frame;
 
 		memcpy(frame.data, image->data, video.width * video.height * 3);
 
@@ -179,8 +172,11 @@ int main(void) {
 		cv::putText(frame, str, cv::Point(20, 130), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
 		cv::putText(frame, str, cv::Point(20, 130), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
-		cv::imshow("VC-VIDEO", frame);
+		str = std::string("TOTAL LARANJAS: ").append(std::to_string(total_laranjas));
+		cv::putText(frame, str, cv::Point(20, 160), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 160), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
+		cv::imshow("VC-VIDEO", frame);
 		key = cv::waitKey(1);
 	}
 
