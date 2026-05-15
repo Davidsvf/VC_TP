@@ -2221,3 +2221,22 @@ int vc_image_diff(IVC* current, IVC* prev, IVC* diff)
 
 	return 1;
 }
+
+int obter_calibre(float diametro_mm)
+{
+	if (diametro_mm >= 100) return 0;
+	else if (diametro_mm >= 87) return 1;
+	else if (diametro_mm >= 84) return 2;
+	else if (diametro_mm >= 81) return 3;
+	else if (diametro_mm >= 77) return 4;
+	else if (diametro_mm >= 73) return 5;
+	else if (diametro_mm >= 70) return 6;
+	else if (diametro_mm >= 67) return 7;
+	else if (diametro_mm >= 64) return 8;
+	else if (diametro_mm >= 62) return 9;
+	else if (diametro_mm >= 60) return 10;
+	else if (diametro_mm >= 58) return 11;
+	else if (diametro_mm >= 56) return 12;
+	else if (diametro_mm >= 53) return 13;
+	else return -1;
+}

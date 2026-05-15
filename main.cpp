@@ -72,6 +72,8 @@ int main(void) {
 	int total_laranjas = 0;
 	int linha_contagem = video.height / 2;
 	bool contou_frame_anterior = false;
+	float escala_mm = 55.0f / 280.0f;
+
 
 	while (key != 'q') {
 		capture.read(frame);
@@ -107,7 +109,7 @@ int main(void) {
 				float ratio = (float)blobs[i].width / (float)blobs[i].height;
 				float preenchimento = (float)blobs[i].area / (float)(blobs[i].width * blobs[i].height);
 
-				if (ratio < 0.80f || ratio > 1.20f) continue;
+				if (ratio < 0.90f || ratio > 1.10f) continue;
 				if (preenchimento < 0.65f) continue;
 				if (blobs[i].area < 700) continue;
 
@@ -119,6 +121,12 @@ int main(void) {
 
 				nlaranjas_frame++;
 
+				float diametro_pixels = (blobs[i].width + blobs[i].height) / 2.0f;
+
+				float diametro_mm = diametro_pixels * escala_mm;
+
+				int calibre = obter_calibre(diametro_mm);
+
 				if (blobs[i].yc >= linha_contagem - 3 && blobs[i].yc <= linha_contagem + 3)
 				{
 					contou_nesta_frame = true;
@@ -126,8 +134,9 @@ int main(void) {
 
 				memcpy(frame.data, image->data, video.width * video.height * 3);
 
-				str = "AREA: " + std::to_string(blobs[i].area) +
-					" PERIMETRO: " + std::to_string(blobs[i].perimeter);
+				str = "AREA:" + std::to_string(blobs[i].area) +
+					" PERIMETRO:" + std::to_string(blobs[i].perimeter) +
+					" CALIBRE:" + std::to_string(calibre);
 
 				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,

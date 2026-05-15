@@ -144,3 +144,6 @@ int vc_binary_blob_info(IVC* src, OVC* blobs, int nblobs);
 int vc_draw_bounding_box(IVC* image, OVC* blobs, int nblobs);
 
 int vc_draw_center_mass(IVC* image, OVC* blobs, int nblobs, int size);
+
+
+int obter_calibre(float diametro_mm);
