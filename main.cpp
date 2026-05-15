@@ -71,7 +71,7 @@ int main(void) {
 
 	int total_laranjas = 0;
 	int linha_contagem = video.height / 2;
-	int contou_frame_anterior = 0;
+	bool contou_frame_anterior = false;
 
 	while (key != 'q') {
 		capture.read(frame);
@@ -96,7 +96,7 @@ int main(void) {
 		OVC* blobs = vc_binary_blob_labelling(seg_laranja, labels, &nblobs);
 		
 		int nlaranjas_frame = 0;
-		int contou_nesta_frame = 0;
+		bool contou_nesta_frame = false;
 
 		if (blobs != NULL)
 		{
@@ -121,7 +121,7 @@ int main(void) {
 
 				if (blobs[i].yc >= linha_contagem - 3 && blobs[i].yc <= linha_contagem + 3)
 				{
-					contou_nesta_frame = 1;
+					contou_nesta_frame = true;
 				}
 
 				memcpy(frame.data, image->data, video.width * video.height * 3);
