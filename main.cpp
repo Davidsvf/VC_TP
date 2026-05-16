@@ -74,6 +74,11 @@ int main(void) {
 	bool contou_frame_anterior = false;
 	float escala_mm = 55.0f / 280.0f;
 
+	float minDiamGlobal[VC_N_GRUPOS_CALIBRE];
+	float maxDiamGlobal[VC_N_GRUPOS_CALIBRE];
+	int countGrupoGlobal[VC_N_GRUPOS_CALIBRE];	
+
+	vc_homogeneidade_inicializar(minDiamGlobal, maxDiamGlobal, countGrupoGlobal);
 
 	while (key != 'q') {
 		capture.read(frame);
@@ -107,9 +112,13 @@ int main(void) {
 				float ratio = (float)blobs[i].width / (float)blobs[i].height;
 				float preenchimento = (float)blobs[i].area / (float)(blobs[i].width * blobs[i].height);
 
-				if (ratio < 0.90f || ratio > 1.10f) continue;
 				if (preenchimento < 0.65f) continue;
 				if (blobs[i].area < 700) continue;
+
+				if (!vc_laranja_completa_na_imagem(blobs[i], video.width, video.height, 3))
+				{
+					continue;
+				}
 
 				OVC blob_valido[1];
 				blob_valido[0] = blobs[i];
@@ -127,6 +136,8 @@ int main(void) {
 
 				int calibre = obter_calibre(diametro_mm);
 
+				vc_homogeneidade_atualizar(diametro_mm,calibre,minDiamGlobal,maxDiamGlobal,countGrupoGlobal);
+
 				if (blobs[i].yc >= linha_contagem - 3 && blobs[i].yc <= linha_contagem + 3)
 				{
 					contou_nesta_frame = true;
@@ -134,10 +145,10 @@ int main(void) {
 
 				memcpy(frame.data, image->data, video.width * video.height * 3);
 
-				str = "AREA:" + std::to_string((int)area_mm) + "mm2" +
-					" PERIMETRO:" + std::to_string((int)perimetro_mm) + "mm" +
+				str = "AREA:" + std::to_string((int)area_mm) +
+					" PERIMETRO:" + std::to_string((int)perimetro_mm) +
 					" CALIBRE:" + std::to_string(calibre) +
-					" DIAMETRO:" + std::to_string((int)	diametro_mm) + "mm";
+					" DIAMETRO:" + std::to_string((int)	diametro_mm);
 
 				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
@@ -145,13 +156,15 @@ int main(void) {
 				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
 					cv::Scalar(0, 255, 255), 1);
-			
 
 				memcpy(image->data, frame.data, video.width * video.height * 3);
 			}
 
 			free(blobs);
 		}
+
+		float maiorDiferenca = 0.0f;
+		int homogeneidade = vc_homogeneidade_verificar(minDiamGlobal,maxDiamGlobal,countGrupoGlobal,&maiorDiferenca);
 
 		if (contou_nesta_frame && !contou_frame_anterior)
 		{
@@ -186,6 +199,20 @@ int main(void) {
 		cv::putText(frame, str, cv::Point(20, 160), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
 		cv::putText(frame, str, cv::Point(20, 160), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
+		if (homogeneidade)
+		{
+			str = "HOMOGENEIDADE DE CALIBRE EXISTENTE, DIFERENCAS DE TAMANHO MAXIMO: " +
+				std::to_string((int)maiorDiferenca) + " MM";
+		}
+		else
+		{
+			str = "HOMOGENEIDADE DE CALIBRE INEXISTENTE, DIFERENCAS DE TAMANHO MAXIMO: " +
+				std::to_string((int)maiorDiferenca) + " MM";
+		}
+
+		cv::rectangle(frame, cv::Point(15, 670), cv::Point(630, 700), cv::Scalar(0, 0, 0), cv::FILLED);
+		cv::putText(frame, str, cv::Point(20, 690), cv::FONT_HERSHEY_SIMPLEX, 0.45, cv::Scalar(255, 255, 255), 1);
+
 		cv::imshow("VC-VIDEO", frame);
 		key = cv::waitKey(1);
 	}
@@ -198,6 +225,7 @@ int main(void) {
 	vc_image_free(seg_laranja);
 	vc_image_free(seg_temp);
 	vc_image_free(labels);
+
 
 	cv::destroyWindow("VC-VIDEO");
 	capture.release();

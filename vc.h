@@ -146,4 +146,26 @@ int vc_draw_bounding_box(IVC* image, OVC* blobs, int nblobs);
 int vc_draw_center_mass(IVC* image, OVC* blobs, int nblobs, int size);
 
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//        FUNÇÕES: Laranjas - TP
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#define VC_GRUPO_CALIBRE_0_2 0
+#define VC_GRUPO_CALIBRE_3_6 1
+#define VC_GRUPO_CALIBRE_7_13 2
+#define VC_N_GRUPOS_CALIBRE 3
+
+int vc_laranja_completa_na_imagem(OVC blob, int width, int height, int margem);
+
 int obter_calibre(float diametro_mm);
+
+int vc_homogeneidade_obter_grupo_calibre(int calibre);
+
+int vc_homogeneidade_obter_limite_grupo(int grupo);
+
+void vc_homogeneidade_inicializar(float minDiam[],float maxDiam[],int countGrupo[]);
+
+void vc_homogeneidade_atualizar(float diametro_mm,int calibre,float minDiam[],float maxDiam[],int countGrupo[]);
+
+int vc_homogeneidade_verificar(float minDiam[],float maxDiam[],int countGrupo[],float* maiorDiferenca);
+

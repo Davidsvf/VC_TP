@@ -2222,6 +2222,21 @@ int vc_image_diff(IVC* current, IVC* prev, IVC* diff)
 	return 1;
 }
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//        FUNÇÕES: Laranjas - TP
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+int vc_laranja_completa_na_imagem(OVC blob, int width, int height, int margem)
+{
+	if (blob.x <= margem) return 0;
+	if (blob.y <= margem) return 0;
+
+	if ((blob.x + blob.width) >= width - margem) return 0;
+	if ((blob.y + blob.height) >= height - margem) return 0;
+
+	return 1;
+}
+
 int obter_calibre(float diametro_mm)
 {
 	if (diametro_mm >= 100) return 0;
@@ -2240,3 +2255,83 @@ int obter_calibre(float diametro_mm)
 	else if (diametro_mm >= 53) return 13;
 	else return -1;
 }
+
+int vc_homogeneidade_obter_grupo_calibre(int calibre)
+{
+	if (calibre >= 0 && calibre <= 2) return VC_GRUPO_CALIBRE_0_2;
+	if (calibre >= 3 && calibre <= 6) return VC_GRUPO_CALIBRE_3_6;
+	if (calibre >= 7 && calibre <= 13) return VC_GRUPO_CALIBRE_7_13;
+
+	return -1;
+}
+
+int vc_homogeneidade_obter_limite_grupo(int grupo)
+{
+	if (grupo == VC_GRUPO_CALIBRE_0_2) return 11;
+	if (grupo == VC_GRUPO_CALIBRE_3_6) return 9;
+	if (grupo == VC_GRUPO_CALIBRE_7_13) return 7;
+
+	return 0;
+}
+
+void vc_homogeneidade_inicializar(float minDiam[], float maxDiam[], int countGrupo[])
+{
+	int i;
+
+	for (i = 0; i < VC_N_GRUPOS_CALIBRE; i++)
+	{
+		minDiam[i] = 9999.0f;
+		maxDiam[i] = 0.0f;
+		countGrupo[i] = 0;
+	}
+}
+
+void vc_homogeneidade_atualizar(float diametro_mm, int calibre, float minDiam[], float maxDiam[], int countGrupo[])
+{
+	int grupo = vc_homogeneidade_obter_grupo_calibre(calibre);
+
+	if (grupo == -1) return;
+
+	if (diametro_mm < minDiam[grupo])
+	{
+		minDiam[grupo] = diametro_mm;
+	}
+
+	if (diametro_mm > maxDiam[grupo])
+	{
+		maxDiam[grupo] = diametro_mm;
+	}
+
+	countGrupo[grupo]++;
+}
+
+int vc_homogeneidade_verificar(float minDiam[], float maxDiam[], int countGrupo[], float* maiorDiferenca)
+{
+	int grupo;
+	int homogeneidade = 1;
+
+	*maiorDiferenca = 0.0f;
+
+	for (grupo = 0; grupo < VC_N_GRUPOS_CALIBRE; grupo++)
+	{
+		if (countGrupo[grupo] >= 2)
+		{
+			float diferenca = maxDiam[grupo] - minDiam[grupo];
+
+			if (diferenca > *maiorDiferenca)
+			{
+				*maiorDiferenca = diferenca;
+			}
+
+			if (diferenca > vc_homogeneidade_obter_limite_grupo(grupo))
+			{
+				homogeneidade = 0;
+			}
+		}
+	}
+
+	return homogeneidade;
+}
+
+
+
