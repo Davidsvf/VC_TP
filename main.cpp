@@ -87,10 +87,8 @@ int main(void) {
 		vc_bgr_to_rgb(image, rgb);
 		vc_rgb_to_hsv(rgb, hsv);
 
-		// Segmentação da laranja
 		vc_hsv_segmentation(hsv, seg_laranja, 13, 38, 41, 100, 21, 95);
 
-		// Limpeza: close -> open
 		vc_binary_close(seg_laranja, seg_temp, 3,3);
 		vc_binary_open(seg_temp, seg_laranja, 3, 3);
 
@@ -122,8 +120,10 @@ int main(void) {
 				nlaranjas_frame++;
 
 				float diametro_pixels = (blobs[i].width + blobs[i].height) / 2.0f;
-
 				float diametro_mm = diametro_pixels * escala_mm;
+
+				float perimetro_mm = blobs[i].perimeter * escala_mm;
+				float area_mm = blobs[i].area * (escala_mm * escala_mm);
 
 				int calibre = obter_calibre(diametro_mm);
 
@@ -134,17 +134,18 @@ int main(void) {
 
 				memcpy(frame.data, image->data, video.width * video.height * 3);
 
-				str = "AREA:" + std::to_string(blobs[i].area) +
-					" PERIMETRO:" + std::to_string(blobs[i].perimeter) +
-					" CALIBRE:" + std::to_string(calibre);
+				str = "AREA:" + std::to_string((int)area_mm) + "mm2" +
+					" PERIMETRO:" + std::to_string((int)perimetro_mm) + "mm" +
+					" CALIBRE:" + std::to_string(calibre) +
+					" DIAMETRO:" + std::to_string((int)	diametro_mm) + "mm";
 
 				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
 					cv::Scalar(0, 0, 0), 2);
-
 				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
 					cv::Scalar(0, 255, 255), 1);
+			
 
 				memcpy(image->data, frame.data, video.width * video.height * 3);
 			}
