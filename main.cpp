@@ -167,13 +167,7 @@ int main(void) {
 
 						total_laranjas++;
 
-						vc_homogeneidade_atualizar(
-							diametro_mm,
-							calibre,
-							minDiamGlobal,
-							maxDiamGlobal,
-							countGrupoGlobal
-						);
+						vc_homogeneidade_atualizar(diametro_mm, calibre, minDiamGlobal,maxDiamGlobal,countGrupoGlobal);
 					}
 				}
 				else
