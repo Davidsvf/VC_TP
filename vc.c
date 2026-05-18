@@ -2333,5 +2333,22 @@ int vc_homogeneidade_verificar(float minDiam[], float maxDiam[], int countGrupo[
 	return homogeneidade;
 }
 
+int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc)
+{
+	for (int i = 0; i < total; i++)
+	{
+		int dx = laranjas[i].xc - xc;
+		int dy = laranjas[i].yc - yc;
+
+		float distancia = sqrt((float)(dx * dx + dy * dy));
+
+		if (distancia < DISTANCIA_MESMA_LARANJA)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
 
 

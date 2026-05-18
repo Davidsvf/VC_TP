@@ -11,18 +11,6 @@ extern "C" {
 #include "vc.h"
 }
 
-#define MAX_LARANJAS 200
-#define DISTANCIA_MESMA_LARANJA 45
-
-typedef struct {
-	int ativo;
-	int xc, yc;
-	float melhor_area;
-	float melhor_perimetro;
-	float melhor_diametro;
-	int melhor_calibre;
-} LARANJA_INFO;
-
 void vc_timer(void) {
 	static bool running = false;
 	static std::chrono::steady_clock::time_point previousTime = std::chrono::steady_clock::now();
@@ -38,24 +26,6 @@ void vc_timer(void) {
 		std::cout << "Pressione qualquer tecla para continuar...\n";
 		std::cin.get();
 	}
-}
-
-int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc)
-{
-	for (int i = 0; i < total; i++)
-	{
-		int dx = laranjas[i].xc - xc;
-		int dy = laranjas[i].yc - yc;
-
-		float distancia = sqrt((float)(dx * dx + dy * dy));
-
-		if (distancia < DISTANCIA_MESMA_LARANJA)
-		{
-			return i;
-		}
-	}
-
-	return -1;
 }
 
 int main(void) {
@@ -280,7 +250,7 @@ int main(void) {
 				std::to_string((int)maiorDiferenca) + " MM";
 		}
 
-		cv::rectangle(frame, cv::Point(15, 670), cv::Point(630, 700), cv::Scalar(0, 0, 0), cv::FILLED);
+		cv::rectangle(frame, cv::Point(15, 670), cv::Point(550, 700), cv::Scalar(0, 0, 0), cv::FILLED);
 		cv::putText(frame, str, cv::Point(20, 690), cv::FONT_HERSHEY_SIMPLEX, 0.45, cv::Scalar(255, 255, 255), 1);
 
 		cv::imshow("VC-VIDEO", frame);

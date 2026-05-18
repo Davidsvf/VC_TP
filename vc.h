@@ -155,6 +155,18 @@ int vc_draw_center_mass(IVC* image, OVC* blobs, int nblobs, int size);
 #define VC_GRUPO_CALIBRE_7_13 2
 #define VC_N_GRUPOS_CALIBRE 3
 
+#define MAX_LARANJAS 200
+#define DISTANCIA_MESMA_LARANJA 45
+
+typedef struct {
+	int ativo;
+	int xc, yc;
+	float melhor_area;
+	float melhor_perimetro;
+	float melhor_diametro;
+	int melhor_calibre;
+} LARANJA_INFO;
+
 int vc_laranja_completa_na_imagem(OVC blob, int width, int height, int margem);
 
 int obter_calibre(float diametro_mm);
@@ -168,4 +180,6 @@ void vc_homogeneidade_inicializar(float minDiam[],float maxDiam[],int countGrupo
 void vc_homogeneidade_atualizar(float diametro_mm,int calibre,float minDiam[],float maxDiam[],int countGrupo[]);
 
 int vc_homogeneidade_verificar(float minDiam[],float maxDiam[],int countGrupo[],float* maiorDiferenca);
+
+int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc);
 
