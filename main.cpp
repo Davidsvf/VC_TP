@@ -208,12 +208,7 @@ int main(void) {
 		}
 
 		float maiorDiferenca = 0.0f;
-		int homogeneidade = vc_homogeneidade_verificar(
-			minDiamGlobal,
-			maxDiamGlobal,
-			countGrupoGlobal,
-			&maiorDiferenca
-		);
+		int homogeneidade = vc_homogeneidade_verificar(minDiamGlobal,maxDiamGlobal,countGrupoGlobal,&maiorDiferenca);
 
 		str = std::string("RESOLUCAO: ").append(std::to_string(video.width)).append("x").append(std::to_string(video.height));
 		cv::putText(frame, str, cv::Point(20, 25), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
