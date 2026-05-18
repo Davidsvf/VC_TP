@@ -136,72 +136,7 @@ int main(void) {
 				float perimetro_mm = blobs[i].perimeter * escala_mm;
 				float area_mm = blobs[i].area * (escala_mm * escala_mm);
 
-				// =========================================================================
-				// DETEÇÃO DE DEFEITOS NA LARANJA
-				// =========================================================================
-
-				float raio = (blobs[i].width + blobs[i].height) / 4.0f;
-				float raio_util = raio * 0.95f;
-
-				int kernel = 35;
-				int offset = kernel / 2;
-				int c = 10;
-
-				for (int y = blobs[i].y; y < blobs[i].y + blobs[i].height; y++)
-				{
-					for (int x = blobs[i].x; x < blobs[i].x + blobs[i].width; x++)
-					{
-						if (x < 0 || y < 0 || x >= video.width || y >= video.height)
-							continue;
-
-						float dx = (float)(x - blobs[i].xc);
-						float dy = (float)(y - blobs[i].yc);
-
-						if ((dx * dx + dy * dy) > (raio_util * raio_util))
-							continue;
-
-						long int pos_hsv = y * hsv->bytesperline + x * hsv->channels;
-						long int pos_img = y * image->bytesperline + x * image->channels;
-
-						unsigned char h = hsv->data[pos_hsv];
-						unsigned char s = hsv->data[pos_hsv + 1];
-						unsigned char v = hsv->data[pos_hsv + 2];
-
-						long int soma = 0;
-						int count = 0;
-
-						for (int yy = y - offset; yy <= y + offset; yy++)
-						{
-							for (int xx = x - offset; xx <= x + offset; xx++)
-							{
-								if (xx < 0 || yy < 0 || xx >= video.width || yy >= video.height)
-									continue;
-
-								long int posk = yy * hsv->bytesperline + xx * hsv->channels;
-
-								soma += hsv->data[posk + 2];
-								count++;
-							}
-						}
-
-						if (count == 0)
-							continue;
-
-						int media = (int)(soma / count);
-
-						int escuro = (v < media - c);
-						int verde = (h >= 35 && h <= 92 && s > 40);
-
-						if (escuro || verde)
-						{
-							image->data[pos_img] = 0;
-							image->data[pos_img + 1] = 0;
-							image->data[pos_img + 2] = 255;
-						}
-					}
-				}
-
-				// =========================================================================
+				vc_detetar_defeitos(hsv, image, blobs[i], 35, 10);
 
 				int indice_laranja = encontrar_laranja(laranjas, total_laranjas, blobs[i].xc, blobs[i].yc);
 

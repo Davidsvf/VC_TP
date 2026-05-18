@@ -2351,4 +2351,77 @@ int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc)
 	return -1;
 }
 
+int vc_detetar_defeitos(IVC* hsv, IVC* image, OVC blob, int kernel, int c)
+{
+	int x, y, xx, yy;
+	int offset;
+	long int pos_hsv, pos_img, posk;
+	long int soma;
+	int count;
+	int media;
+	float raio, raio_util;
+	float dx, dy;
+	unsigned char v;
 
+	if (hsv == NULL || image == NULL) return 0;
+	if (hsv->data == NULL || image->data == NULL) return 0;
+	if (hsv->width != image->width || hsv->height != image->height) return 0;
+	if (hsv->channels != 3 || image->channels != 3) return 0;
+	if (kernel < 3 || (kernel % 2) == 0) return 0;
+
+	offset = kernel / 2;
+
+	raio = (blob.width + blob.height) / 4.0f;
+	raio_util = raio * 0.95f;
+
+	for (y = blob.y; y < blob.y + blob.height; y++)
+	{
+		for (x = blob.x; x < blob.x + blob.width; x++)
+		{
+			if (x < 0 || y < 0 || x >= hsv->width || y >= hsv->height)
+				continue;
+
+			dx = (float)(x - blob.xc);
+			dy = (float)(y - blob.yc);
+
+			if ((dx * dx + dy * dy) > (raio_util * raio_util))
+				continue;
+
+			pos_hsv = y * hsv->bytesperline + x * hsv->channels;
+			pos_img = y * image->bytesperline + x * image->channels;
+
+			v = hsv->data[pos_hsv + 2];
+
+			soma = 0;
+			count = 0;
+
+			for (yy = y - offset; yy <= y + offset; yy++)
+			{
+				for (xx = x - offset; xx <= x + offset; xx++)
+				{
+					if (xx < 0 || yy < 0 || xx >= hsv->width || yy >= hsv->height)
+						continue;
+
+					posk = yy * hsv->bytesperline + xx * hsv->channels;
+
+					soma += hsv->data[posk + 2];
+					count++;
+				}
+			}
+
+			if (count == 0)
+				continue;
+
+			media = (int)(soma / count);
+
+			if (v < media - c)
+			{
+				image->data[pos_img] = 0;
+				image->data[pos_img + 1] = 0;
+				image->data[pos_img + 2] = 255;
+			}
+		}
+	}
+
+	return 1;
+}

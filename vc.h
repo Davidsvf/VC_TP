@@ -183,3 +183,4 @@ int vc_homogeneidade_verificar(float minDiam[],float maxDiam[],int countGrupo[],
 
 int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc);
 
+int vc_detetar_defeitos(IVC* hsv, IVC* image, OVC blob, int kernel, int c);
