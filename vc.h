@@ -183,4 +183,6 @@ int vc_homogeneidade_verificar(float minDiam[],float maxDiam[],int countGrupo[],
 
 int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc);
 
-int vc_detetar_defeitos(IVC* hsv, IVC* image, OVC blob, int kernel, int c);
+float vc_detetar_defeitos(IVC* hsv, OVC blob, int kernel, int c);
+
+int obter_categoria(float percent_defeitos);

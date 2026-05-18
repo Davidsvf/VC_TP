@@ -2351,23 +2351,24 @@ int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc)
 	return -1;
 }
 
-int vc_detetar_defeitos(IVC* hsv, IVC* image, OVC blob, int kernel, int c)
+float vc_detetar_defeitos(IVC* hsv, OVC blob, int kernel, int c)
 {
 	int x, y, xx, yy;
 	int offset;
-	long int pos_hsv, pos_img, posk;
+	long int pos_hsv, posk;
 	long int soma;
 	int count;
 	int media;
 	float raio, raio_util;
 	float dx, dy;
 	unsigned char v;
+	int total_pixels = 0;
+	int total_defeitos = 0;
 
-	if (hsv == NULL || image == NULL) return 0;
-	if (hsv->data == NULL || image->data == NULL) return 0;
-	if (hsv->width != image->width || hsv->height != image->height) return 0;
-	if (hsv->channels != 3 || image->channels != 3) return 0;
-	if (kernel < 3 || (kernel % 2) == 0) return 0;
+	if (hsv == NULL) return 0.0f;
+	if (hsv->data == NULL) return 0.0f;
+	if (hsv->channels != 3) return 0.0f;
+	if (kernel < 3 || (kernel % 2) == 0) return 0.0f;
 
 	offset = kernel / 2;
 
@@ -2388,8 +2389,6 @@ int vc_detetar_defeitos(IVC* hsv, IVC* image, OVC blob, int kernel, int c)
 				continue;
 
 			pos_hsv = y * hsv->bytesperline + x * hsv->channels;
-			pos_img = y * image->bytesperline + x * image->channels;
-
 			v = hsv->data[pos_hsv + 2];
 
 			soma = 0;
@@ -2403,7 +2402,6 @@ int vc_detetar_defeitos(IVC* hsv, IVC* image, OVC blob, int kernel, int c)
 						continue;
 
 					posk = yy * hsv->bytesperline + xx * hsv->channels;
-
 					soma += hsv->data[posk + 2];
 					count++;
 				}
@@ -2414,14 +2412,29 @@ int vc_detetar_defeitos(IVC* hsv, IVC* image, OVC blob, int kernel, int c)
 
 			media = (int)(soma / count);
 
+			total_pixels++;
+
 			if (v < media - c)
-			{
-				image->data[pos_img] = 0;
-				image->data[pos_img + 1] = 0;
-				image->data[pos_img + 2] = 255;
-			}
+				total_defeitos++;
+				
 		}
 	}
 
-	return 1;
+	if (total_pixels == 0) return 0.0f;
+
+	return ((float)total_defeitos / (float)total_pixels) * 100.0f;
+}
+
+int obter_categoria(float percent_defeitos)
+{
+	if (percent_defeitos <= 0.5f)
+		return 0;
+
+	if (percent_defeitos <= 3.0f)
+		return 1;
+
+	if (percent_defeitos <= 8.0f)
+		return 2;
+
+	return 3;
 }

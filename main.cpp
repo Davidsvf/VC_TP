@@ -123,7 +123,6 @@ int main(void) {
 				float preenchimento = (float)blobs[i].area / (float)(blobs[i].width * blobs[i].height);
 
 				if (preenchimento < 0.70f) continue;
-
 				if (!vc_laranja_completa_na_imagem(blobs[i], video.width, video.height, 3)) continue;
 
 				float diametro_pixels = (blobs[i].width + blobs[i].height) / 2.0f;
@@ -136,7 +135,19 @@ int main(void) {
 				float perimetro_mm = blobs[i].perimeter * escala_mm;
 				float area_mm = blobs[i].area * (escala_mm * escala_mm);
 
-				vc_detetar_defeitos(hsv, image, blobs[i], 35, 10);
+				float percent_defeitos = vc_detetar_defeitos(hsv, blobs[i], 35, 10);
+				int categoria = obter_categoria(percent_defeitos);
+
+				std::string categoria_txt;
+
+				if (categoria == 0)
+					categoria_txt = "EXTRA";
+				else if (categoria == 1)
+					categoria_txt = "I";
+				else if (categoria == 2)
+					categoria_txt = "II";
+				else
+					categoria_txt = "REJ";
 
 				int indice_laranja = encontrar_laranja(laranjas, total_laranjas, blobs[i].xc, blobs[i].yc);
 
@@ -189,19 +200,29 @@ int main(void) {
 
 				
 				memcpy(frame.data, image->data, video.width * video.height * 3);
-				
 
-				str = "AREA:" + std::to_string((int)laranjas[indice_laranja].melhor_area) +
+				std::string str1 = "AREA:" + std::to_string((int)laranjas[indice_laranja].melhor_area) +
 					" PERIMETRO:" + std::to_string((int)laranjas[indice_laranja].melhor_perimetro) +
 					" CALIBRE:" + std::to_string(laranjas[indice_laranja].melhor_calibre) +
 					" DIAMETRO:" + std::to_string((int)laranjas[indice_laranja].melhor_diametro);
 
-				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
+				std::string str2 = "DEFEITO:" + std::to_string(percent_defeitos).substr(0, std::to_string(percent_defeitos).find('.') + 3) + "%" + 
+					" CATEGORIA:" + categoria_txt;
+
+				cv::putText(frame, str1, cv::Point(blobs[i].x, blobs[i].y - 30),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
 					cv::Scalar(0, 0, 0), 2);
-				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
+				cv::putText(frame, str1, cv::Point(blobs[i].x, blobs[i].y - 30),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
 					cv::Scalar(0, 255, 255), 1);
+
+				cv::putText(frame, str2, cv::Point(blobs[i].x, blobs[i].y - 10),
+					cv::FONT_HERSHEY_SIMPLEX, 0.5,
+					cv::Scalar(0, 0, 0), 2);
+				cv::putText(frame, str2, cv::Point(blobs[i].x, blobs[i].y - 10),
+					cv::FONT_HERSHEY_SIMPLEX, 0.5,
+					cv::Scalar(0, 255, 255), 1);
+
 
 				memcpy(image->data, frame.data, video.width * video.height * 3);
 			}
