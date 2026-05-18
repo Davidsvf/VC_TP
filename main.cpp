@@ -113,7 +113,7 @@ int main(void) {
 				float preenchimento = (float)blobs[i].area / (float)(blobs[i].width * blobs[i].height);
 
 				if (preenchimento < 0.65f) continue;
-				if (blobs[i].area < 700) continue;
+				if (blobs[i].area < 800) continue;
 
 				if (!vc_laranja_completa_na_imagem(blobs[i], video.width, video.height, 3))
 				{
