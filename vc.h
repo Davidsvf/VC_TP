@@ -169,7 +169,7 @@ typedef struct {
 
 int vc_laranja_completa_na_imagem(OVC blob, int width, int height, int margem);
 
-int obter_calibre(float diametro_mm);
+int vc_obter_calibre(float diametro_mm);
 
 int vc_homogeneidade_obter_grupo_calibre(int calibre);
 
@@ -181,8 +181,8 @@ void vc_homogeneidade_atualizar(float diametro_mm,int calibre,float minDiam[],fl
 
 int vc_homogeneidade_verificar(float minDiam[],float maxDiam[],int countGrupo[],float* maiorDiferenca);
 
-int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc);
+int vc_encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc);
 
 float vc_detetar_defeitos(IVC* hsv, OVC blob, int kernel, int c);
 
-int obter_categoria(float percent_defeitos);
+int vc_obter_categoria(float percent_defeitos);

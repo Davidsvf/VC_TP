@@ -2237,7 +2237,7 @@ int vc_laranja_completa_na_imagem(OVC blob, int width, int height, int margem)
 	return 1;
 }
 
-int obter_calibre(float diametro_mm)
+int vc_obter_calibre(float diametro_mm)
 {
 	if (diametro_mm >= 100) return 0;
 	else if (diametro_mm >= 87) return 1;
@@ -2333,7 +2333,7 @@ int vc_homogeneidade_verificar(float minDiam[], float maxDiam[], int countGrupo[
 	return homogeneidade;
 }
 
-int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc)
+int vc_encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc)
 {
 	for (int i = 0; i < total; i++)
 	{
@@ -2425,7 +2425,7 @@ float vc_detetar_defeitos(IVC* hsv, OVC blob, int kernel, int c)
 	return ((float)total_defeitos / (float)total_pixels) * 100.0f;
 }
 
-int obter_categoria(float percent_defeitos)
+int vc_obter_categoria(float percent_defeitos)
 {
 	if (percent_defeitos <= 0.5f)
 		return 0;

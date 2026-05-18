@@ -128,7 +128,7 @@ int main(void) {
 				float diametro_pixels = (blobs[i].width + blobs[i].height) / 2.0f;
 				float diametro_mm = diametro_pixels * escala_mm;
 
-				int calibre = obter_calibre(diametro_mm);
+				int calibre = vc_obter_calibre(diametro_mm);
 
 				if (calibre == -1) continue;
 
@@ -136,7 +136,7 @@ int main(void) {
 				float area_mm = blobs[i].area * (escala_mm * escala_mm);
 
 				float percent_defeitos = vc_detetar_defeitos(hsv, blobs[i], 35, 10);
-				int categoria = obter_categoria(percent_defeitos);
+				int categoria = vc_obter_categoria(percent_defeitos);
 
 				std::string categoria_txt;
 
@@ -149,7 +149,7 @@ int main(void) {
 				else
 					categoria_txt = "REJ";
 
-				int indice_laranja = encontrar_laranja(laranjas, total_laranjas, blobs[i].xc, blobs[i].yc);
+				int indice_laranja = vc_encontrar_laranja(laranjas, total_laranjas, blobs[i].xc, blobs[i].yc);
 
 				if (indice_laranja == -1)
 				{
@@ -233,29 +233,21 @@ int main(void) {
 		float maiorDiferenca = 0.0f;
 		int homogeneidade = vc_homogeneidade_verificar(minDiamGlobal,maxDiamGlobal,countGrupoGlobal,&maiorDiferenca);
 
-		str = std::string("RESOLUCAO: ").append(std::to_string(video.width)).append("x").append(std::to_string(video.height));
-		cv::putText(frame, str, cv::Point(20, 25), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
-		cv::putText(frame, str, cv::Point(20, 25), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
-
 		str = std::string("TOTAL DE FRAMES: ").append(std::to_string(video.ntotalframes));
 		cv::putText(frame, str, cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
 		cv::putText(frame, str, cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
-		str = std::string("FRAME RATE: ").append(std::to_string(video.fps));
-		cv::putText(frame, str, cv::Point(20, 75), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
-		cv::putText(frame, str, cv::Point(20, 75), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
-
 		str = std::string("N. DA FRAME: ").append(std::to_string(video.nframe));
-		cv::putText(frame, str, cv::Point(20, 100), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
-		cv::putText(frame, str, cv::Point(20, 100), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
+		cv::putText(frame, str, cv::Point(20, 80), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 80), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
 		str = std::string("LARANJAS FRAME: ").append(std::to_string(nlaranjas_frame));
-		cv::putText(frame, str, cv::Point(20, 130), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
-		cv::putText(frame, str, cv::Point(20, 130), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
+		cv::putText(frame, str, cv::Point(20, 110), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 110), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
 		str = std::string("TOTAL LARANJAS: ").append(std::to_string(total_laranjas));
-		cv::putText(frame, str, cv::Point(20, 160), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
-		cv::putText(frame, str, cv::Point(20, 160), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
+		cv::putText(frame, str, cv::Point(20, 140), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 140), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
 		if (homogeneidade)
 		{
