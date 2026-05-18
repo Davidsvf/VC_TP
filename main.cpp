@@ -260,8 +260,9 @@ int main(void) {
 				std::to_string((int)maiorDiferenca) + " MM";
 		}
 
-		cv::rectangle(frame, cv::Point(15, 670), cv::Point(550, 700), cv::Scalar(0, 0, 0), cv::FILLED);
-		cv::putText(frame, str, cv::Point(20, 690), cv::FONT_HERSHEY_SIMPLEX, 0.45, cv::Scalar(255, 255, 255), 1);
+	
+		cv::putText(frame, str, cv::Point(15, 680), cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(0, 0, 0), 3);
+		cv::putText(frame, str, cv::Point(15, 680), cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(255, 255, 255), 1);
 
 		cv::imshow("VC-VIDEO", frame);
 		key = cv::waitKey(1);
