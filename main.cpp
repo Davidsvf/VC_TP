@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <cmath>
 #include <opencv2\opencv.hpp>
 #include <opencv2\core.hpp>
 #include <opencv2\highgui.hpp>
@@ -9,6 +10,18 @@
 extern "C" {
 #include "vc.h"
 }
+
+#define MAX_LARANJAS 200
+#define DISTANCIA_MESMA_LARANJA 45
+
+typedef struct {
+	int ativo;
+	int xc, yc;
+	float melhor_area;
+	float melhor_perimetro;
+	float melhor_diametro;
+	int melhor_calibre;
+} LARANJA_INFO;
 
 void vc_timer(void) {
 	static bool running = false;
@@ -25,6 +38,24 @@ void vc_timer(void) {
 		std::cout << "Pressione qualquer tecla para continuar...\n";
 		std::cin.get();
 	}
+}
+
+int encontrar_laranja(LARANJA_INFO laranjas[], int total, int xc, int yc)
+{
+	for (int i = 0; i < total; i++)
+	{
+		int dx = laranjas[i].xc - xc;
+		int dy = laranjas[i].yc - yc;
+
+		float distancia = sqrt((float)(dx * dx + dy * dy));
+
+		if (distancia < DISTANCIA_MESMA_LARANJA)
+		{
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 int main(void) {
@@ -70,13 +101,24 @@ int main(void) {
 	IVC* labels = vc_image_new(video.width, video.height, 1, 255);
 
 	int total_laranjas = 0;
-	int linha_contagem = video.height / 2;
-	bool contou_frame_anterior = false;
 	float escala_mm = 55.0f / 280.0f;
+
+	LARANJA_INFO laranjas[MAX_LARANJAS];
+
+	for (int i = 0; i < MAX_LARANJAS; i++)
+	{
+		laranjas[i].ativo = 0;
+		laranjas[i].xc = 0;
+		laranjas[i].yc = 0;
+		laranjas[i].melhor_area = 0.0f;
+		laranjas[i].melhor_perimetro = 0.0f;
+		laranjas[i].melhor_diametro = 0.0f;
+		laranjas[i].melhor_calibre = -1;
+	}
 
 	float minDiamGlobal[VC_N_GRUPOS_CALIBRE];
 	float maxDiamGlobal[VC_N_GRUPOS_CALIBRE];
-	int countGrupoGlobal[VC_N_GRUPOS_CALIBRE];	
+	int countGrupoGlobal[VC_N_GRUPOS_CALIBRE];
 
 	vc_homogeneidade_inicializar(minDiamGlobal, maxDiamGlobal, countGrupoGlobal);
 
@@ -94,14 +136,13 @@ int main(void) {
 
 		vc_hsv_segmentation(hsv, seg_laranja, 13, 38, 41, 100, 21, 95);
 
-		vc_binary_close(seg_laranja, seg_temp, 3,3);
+		vc_binary_close(seg_laranja, seg_temp, 3, 3);
 		vc_binary_open(seg_temp, seg_laranja, 3, 3);
 
 		int nblobs = 0;
 		OVC* blobs = vc_binary_blob_labelling(seg_laranja, labels, &nblobs);
-		
+
 		int nlaranjas_frame = 0;
-		bool contou_nesta_frame = false;
 
 		if (blobs != NULL)
 		{
@@ -109,16 +150,64 @@ int main(void) {
 
 			for (int i = 0; i < nblobs; i++)
 			{
-				float ratio = (float)blobs[i].width / (float)blobs[i].height;
 				float preenchimento = (float)blobs[i].area / (float)(blobs[i].width * blobs[i].height);
 
-				if (preenchimento < 0.65f) continue;
-				if (blobs[i].area < 800) continue;
+				if (preenchimento < 0.70f) continue;
 
-				if (!vc_laranja_completa_na_imagem(blobs[i], video.width, video.height, 3))
+				if (!vc_laranja_completa_na_imagem(blobs[i], video.width, video.height, 3)) continue;
+
+				float diametro_pixels = (blobs[i].width + blobs[i].height) / 2.0f;
+				float diametro_mm = diametro_pixels * escala_mm;
+
+				int calibre = obter_calibre(diametro_mm);
+
+				if (calibre == -1) continue;
+
+				float perimetro_mm = blobs[i].perimeter * escala_mm;
+				float area_mm = blobs[i].area * (escala_mm * escala_mm);
+
+				int indice_laranja = encontrar_laranja(laranjas, total_laranjas, blobs[i].xc, blobs[i].yc);
+
+				if (indice_laranja == -1)
 				{
-					continue;
+					if (total_laranjas < MAX_LARANJAS)
+					{
+						indice_laranja = total_laranjas;
+
+						laranjas[indice_laranja].ativo = 1;
+						laranjas[indice_laranja].xc = blobs[i].xc;
+						laranjas[indice_laranja].yc = blobs[i].yc;
+						laranjas[indice_laranja].melhor_area = area_mm;
+						laranjas[indice_laranja].melhor_perimetro = perimetro_mm;
+						laranjas[indice_laranja].melhor_diametro = diametro_mm;
+						laranjas[indice_laranja].melhor_calibre = calibre;
+
+						total_laranjas++;
+
+						vc_homogeneidade_atualizar(
+							diametro_mm,
+							calibre,
+							minDiamGlobal,
+							maxDiamGlobal,
+							countGrupoGlobal
+						);
+					}
 				}
+				else
+				{
+					laranjas[indice_laranja].xc = blobs[i].xc;
+					laranjas[indice_laranja].yc = blobs[i].yc;
+
+					if (area_mm > laranjas[indice_laranja].melhor_area)
+					{
+						laranjas[indice_laranja].melhor_area = area_mm;
+						laranjas[indice_laranja].melhor_perimetro = perimetro_mm;
+						laranjas[indice_laranja].melhor_diametro = diametro_mm;
+						laranjas[indice_laranja].melhor_calibre = calibre;
+					}
+				}
+
+				nlaranjas_frame++;
 
 				OVC blob_valido[1];
 				blob_valido[0] = blobs[i];
@@ -126,29 +215,14 @@ int main(void) {
 				vc_draw_bounding_box(image, blob_valido, 1);
 				vc_draw_center_mass(image, blob_valido, 1, 5);
 
-				nlaranjas_frame++;
+				vc_binary_to_rgb(seg_laranja, rgb);
+				memcpy(frame.data, rgb->data, video.width * video.height * 3);
+				
 
-				float diametro_pixels = (blobs[i].width + blobs[i].height) / 2.0f;
-				float diametro_mm = diametro_pixels * escala_mm;
-
-				float perimetro_mm = blobs[i].perimeter * escala_mm;
-				float area_mm = blobs[i].area * (escala_mm * escala_mm);
-
-				int calibre = obter_calibre(diametro_mm);
-
-				vc_homogeneidade_atualizar(diametro_mm,calibre,minDiamGlobal,maxDiamGlobal,countGrupoGlobal);
-
-				if (blobs[i].yc >= linha_contagem - 3 && blobs[i].yc <= linha_contagem + 3)
-				{
-					contou_nesta_frame = true;
-				}
-
-				memcpy(frame.data, image->data, video.width * video.height * 3);
-
-				str = "AREA:" + std::to_string((int)area_mm) +
-					" PERIMETRO:" + std::to_string((int)perimetro_mm) +
-					" CALIBRE:" + std::to_string(calibre) +
-					" DIAMETRO:" + std::to_string((int)	diametro_mm);
+				str = "AREA:" + std::to_string((int)laranjas[indice_laranja].melhor_area) +
+					" PERIMETRO:" + std::to_string((int)laranjas[indice_laranja].melhor_perimetro) +
+					" CALIBRE:" + std::to_string(laranjas[indice_laranja].melhor_calibre) +
+					" DIAMETRO:" + std::to_string((int)laranjas[indice_laranja].melhor_diametro);
 
 				cv::putText(frame, str, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
@@ -164,16 +238,12 @@ int main(void) {
 		}
 
 		float maiorDiferenca = 0.0f;
-		int homogeneidade = vc_homogeneidade_verificar(minDiamGlobal,maxDiamGlobal,countGrupoGlobal,&maiorDiferenca);
-
-		if (contou_nesta_frame && !contou_frame_anterior)
-		{
-			total_laranjas++;
-		}
-
-		contou_frame_anterior = contou_nesta_frame;
-
-		memcpy(frame.data, image->data, video.width * video.height * 3);
+		int homogeneidade = vc_homogeneidade_verificar(
+			minDiamGlobal,
+			maxDiamGlobal,
+			countGrupoGlobal,
+			&maiorDiferenca
+		);
 
 		str = std::string("RESOLUCAO: ").append(std::to_string(video.width)).append("x").append(std::to_string(video.height));
 		cv::putText(frame, str, cv::Point(20, 25), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
@@ -201,12 +271,12 @@ int main(void) {
 
 		if (homogeneidade)
 		{
-			str = "HOMOGENEIDADE DE CALIBRE EXISTENTE, DIFERENCAS DE TAMANHO MAXIMO: " +
+			str = "HOMOGENEIDADE DE CALIBRE EXISTENTE, DIFERENCA MAXIMA: " +
 				std::to_string((int)maiorDiferenca) + " MM";
 		}
 		else
 		{
-			str = "HOMOGENEIDADE DE CALIBRE INEXISTENTE, DIFERENCAS DE TAMANHO MAXIMO: " +
+			str = "HOMOGENEIDADE DE CALIBRE INEXISTENTE, DIFERENCA MAXIMA: " +
 				std::to_string((int)maiorDiferenca) + " MM";
 		}
 
@@ -225,7 +295,6 @@ int main(void) {
 	vc_image_free(seg_laranja);
 	vc_image_free(seg_temp);
 	vc_image_free(labels);
-
 
 	cv::destroyWindow("VC-VIDEO");
 	capture.release();
