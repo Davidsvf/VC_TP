@@ -134,7 +134,7 @@ int main(void) {
 		vc_bgr_to_rgb(image, rgb);
 		vc_rgb_to_hsv(rgb, hsv);
 
-		vc_hsv_segmentation(hsv, seg_laranja, 13, 38, 41, 100, 21, 95);
+		vc_hsv_segmentation(hsv, seg_laranja, 13, 40, 41, 100, 18, 95);
 
 		vc_binary_close(seg_laranja, seg_temp, 3, 3);
 		vc_binary_open(seg_temp, seg_laranja, 3, 3);
@@ -215,8 +215,8 @@ int main(void) {
 				vc_draw_bounding_box(image, blob_valido, 1);
 				vc_draw_center_mass(image, blob_valido, 1, 5);
 
-				vc_binary_to_rgb(seg_laranja, rgb);
-				memcpy(frame.data, rgb->data, video.width * video.height * 3);
+				
+				memcpy(frame.data, image->data, video.width * video.height * 3);
 				
 
 				str = "AREA:" + std::to_string((int)laranjas[indice_laranja].melhor_area) +
@@ -285,6 +285,7 @@ int main(void) {
 
 		cv::imshow("VC-VIDEO", frame);
 		key = cv::waitKey(1);
+
 	}
 
 	vc_timer();
