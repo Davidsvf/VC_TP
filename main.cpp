@@ -211,17 +211,17 @@ int main(void) {
 
 				cv::putText(frame, str1, cv::Point(blobs[i].x, blobs[i].y - 30),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
-					cv::Scalar(0, 0, 0), 2);
+					cv::Scalar(0, 0, 0), 3);
 				cv::putText(frame, str1, cv::Point(blobs[i].x, blobs[i].y - 30),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
-					cv::Scalar(0, 255, 255), 1);
+					cv::Scalar(255, 255, 255), 1);
 
 				cv::putText(frame, str2, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
-					cv::Scalar(0, 0, 0), 2);
+					cv::Scalar(0, 0, 0), 3);
 				cv::putText(frame, str2, cv::Point(blobs[i].x, blobs[i].y - 10),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5,
-					cv::Scalar(0, 255, 255), 1);
+					cv::Scalar(255, 255, 255), 1);
 
 
 				memcpy(image->data, frame.data, video.width * video.height * 3);
@@ -234,19 +234,19 @@ int main(void) {
 		int homogeneidade = vc_homogeneidade_verificar(minDiamGlobal,maxDiamGlobal,countGrupoGlobal,&maiorDiferenca);
 
 		str = std::string("TOTAL DE FRAMES: ").append(std::to_string(video.ntotalframes));
-		cv::putText(frame, str, cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 3);
 		cv::putText(frame, str, cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
 		str = std::string("N. DA FRAME: ").append(std::to_string(video.nframe));
-		cv::putText(frame, str, cv::Point(20, 80), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 80), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 3);
 		cv::putText(frame, str, cv::Point(20, 80), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
 		str = std::string("LARANJAS FRAME: ").append(std::to_string(nlaranjas_frame));
-		cv::putText(frame, str, cv::Point(20, 110), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 110), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 3);
 		cv::putText(frame, str, cv::Point(20, 110), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
 		str = std::string("TOTAL LARANJAS: ").append(std::to_string(total_laranjas));
-		cv::putText(frame, str, cv::Point(20, 140), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 2);
+		cv::putText(frame, str, cv::Point(20, 140), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(0, 0, 0), 3);
 		cv::putText(frame, str, cv::Point(20, 140), cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 255), 1);
 
 		if (homogeneidade)
