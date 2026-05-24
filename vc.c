@@ -1,13 +1,4 @@
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//           INSTITUTO POLITÉCNICO DO CÁVADO E DO AVE
-//                          2022/2023
-//             ENGENHARIA DE SISTEMAS INFORMÁTICOS
-//                    VISÃO POR COMPUTADOR
-//
-//             [  DUARTE DUQUE - dduque@ipca.pt  ]
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// Desabilita (no MSVC++) warnings de funções não seguras (fopen, sscanf, etc...)
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
@@ -18,12 +9,9 @@
 #include "vc.h"
 
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//            FUNÇÕES: ALOCAR E LIBERTAR UMA IMAGEM
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-// Alocar memória para uma imagem
+
 IVC *vc_image_new(int width, int height, int channels, int levels)
 {
 	IVC *image = (IVC *) malloc(sizeof(IVC));
@@ -47,7 +35,7 @@ IVC *vc_image_new(int width, int height, int channels, int levels)
 }
 
 
-// Libertar memória de uma imagem
+
 IVC *vc_image_free(IVC *image)
 {
 	if(image != NULL)
@@ -65,10 +53,6 @@ IVC *vc_image_free(IVC *image)
 	return image;
 }
 
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//    FUNÇÕES: LEITURA E ESCRITA DE IMAGENS (PBM, PGM E PPM)
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 char *netpbm_get_token(FILE *file, char *tok, int len)
@@ -123,14 +107,7 @@ long int unsigned_char_to_bit(unsigned char *datauchar, unsigned char *databit, 
 
 			if(countbits <= 8)
 			{
-				// Numa imagem PBM:
-				// 1 = Preto
-				// 0 = Branco
-				//*p |= (datauchar[pos] != 0) << (8 - countbits);
 				
-				// Na nossa imagem:
-				// 1 = Branco
-				// 0 = Preto
 				*p |= (datauchar[pos] == 0) << (8 - countbits);
 
 				countbits++;
@@ -166,14 +143,6 @@ void bit_to_unsigned_char(unsigned char *databit, unsigned char *datauchar, int 
 
 			if(countbits <= 8)
 			{
-				// Numa imagem PBM:
-				// 1 = Preto
-				// 0 = Branco
-				//datauchar[pos] = (*p & (1 << (8 - countbits))) ? 1 : 0;
-
-				// Na nossa imagem:
-				// 1 = Branco
-				// 0 = Preto
 				datauchar[pos] = (*p & (1 << (8 - countbits))) ? 0 : 1;
 				
 				countbits++;
@@ -199,15 +168,15 @@ IVC *vc_read_image(char *filename)
 	int levels = 255;
 	int v;
 	
-	// Abre o ficheiro
+	
 	if((file = fopen(filename, "rb")) != NULL)
 	{
-		// Efectua a leitura do header
+		
 		netpbm_get_token(file, tok, sizeof(tok));
 
-		if(strcmp(tok, "P4") == 0) { channels = 1; levels = 1; }	// Se PBM (Binary [0,1])
-		else if(strcmp(tok, "P5") == 0) channels = 1;				// Se PGM (Gray [0,MAX(level,255)])
-		else if(strcmp(tok, "P6") == 0) channels = 3;				// Se PPM (RGB [0,MAX(level,255)])
+		if(strcmp(tok, "P4") == 0) { channels = 1; levels = 1; }	
+		else if(strcmp(tok, "P5") == 0) channels = 1;				
+		else if(strcmp(tok, "P6") == 0) channels = 3;				
 		else
 		{
 			#ifdef VC_DEBUG
@@ -218,7 +187,7 @@ IVC *vc_read_image(char *filename)
 			return NULL;
 		}
 		
-		if(levels == 1) // PBM
+		if(levels == 1) 
 		{
 			if(sscanf(netpbm_get_token(file, tok, sizeof(tok)), "%d", &width) != 1 || 
 			   sscanf(netpbm_get_token(file, tok, sizeof(tok)), "%d", &height) != 1)
@@ -231,7 +200,7 @@ IVC *vc_read_image(char *filename)
 				return NULL;
 			}
 
-			// Aloca memória para imagem
+			
 			image = vc_image_new(width, height, channels, levels);
 			if(image == NULL) return NULL;
 
@@ -259,7 +228,7 @@ IVC *vc_read_image(char *filename)
 
 			free(tmp);
 		}
-		else // PGM ou PPM
+		else 
 		{
 			if(sscanf(netpbm_get_token(file, tok, sizeof(tok)), "%d", &width) != 1 || 
 			   sscanf(netpbm_get_token(file, tok, sizeof(tok)), "%d", &height) != 1 || 
@@ -273,7 +242,7 @@ IVC *vc_read_image(char *filename)
 				return NULL;
 			}
 
-			// Aloca memória para imagem
+			
 			image = vc_image_new(width, height, channels, levels);
 			if(image == NULL) return NULL;
 
@@ -374,11 +343,11 @@ int vc_gray_negative(IVC* srcdst)
 	int x, y;
 	long int pos;
 
-	// Verificação de erros
+	
 	if ((srcdst->width <= 0) || (srcdst->height <= 0) || (srcdst->data == NULL)) return 0;
 	if (channels != 1) return 0;
 
-	// Inverte a imagem Gray
+	
 	for (y = 0; y < height; y++)
 	{
 		for (x = 0; x < width; x++)
@@ -402,11 +371,11 @@ int vc_rgb_negative(IVC* srcdst) {
 	int x, y;
 	long int pos;
 
-	//Verificação de erros
+	
 	if ((srcdst->width <= 0) || (srcdst->height <= 0) || (srcdst->data == NULL)) return 0;
 	if (channels != 3) return 0;
 
-	//Inverte a imagem RGB
+	
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
 			pos = y * bytesperline + x * channels;
@@ -434,7 +403,7 @@ int vc_rgb_to_gray(IVC* src, IVC* dst)
 	long int pos_src, pos_dst;
 	float rf, gf, bf;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 3) || (dst->channels != 1)) return 0;
@@ -456,7 +425,7 @@ int vc_rgb_to_gray(IVC* src, IVC* dst)
 	return 1;
 }
 
-// CONVERTE IMAGEM BGR EM RGB
+
 int vc_bgr_to_rgb(IVC* src, IVC* dst)
 {
 	unsigned char* datasrc = (unsigned char*)src->data;
@@ -482,16 +451,16 @@ int vc_bgr_to_rgb(IVC* src, IVC* dst)
 			pos_src = y * bytesperline_src + x * channels_src;
 			pos_dst = y * bytesperline_dst + x * channels_dst;
 
-			datadst[pos_dst] = datasrc[pos_src + 2];       // R
-			datadst[pos_dst + 1] = datasrc[pos_src + 1];   // G
-			datadst[pos_dst + 2] = datasrc[pos_src];       // B
+			datadst[pos_dst] = datasrc[pos_src + 2];       
+			datadst[pos_dst + 1] = datasrc[pos_src + 1];   
+			datadst[pos_dst + 2] = datasrc[pos_src];       
 		}
 	}
 
 	return 1;
 }
 
-// CONVERTE IMAGEM BINÁRIA EM RGB
+
 int vc_binary_to_rgb(IVC* src, IVC* dst)
 {
 	unsigned char* datasrc = (unsigned char*)src->data;
@@ -542,7 +511,7 @@ int vc_rgb_to_hsv(IVC* src, IVC* dst) {
 	float max, min, dif;
 	float h, s, v;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 3) || (dst->channels != 3)) return 0;
@@ -612,7 +581,7 @@ int vc_hsv_segmentation(IVC* src, IVC* dst, int hmin, int hmax, int smin, int sm
 	long int pos_src, pos_dst;
 	int hue_in_range;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 3) || (dst->channels != 1)) return 0;
@@ -625,7 +594,7 @@ int vc_hsv_segmentation(IVC* src, IVC* dst, int hmin, int hmax, int smin, int sm
 	hmax = (hmax / 360.0f) * 255.0f;
 
 	smin = (smin / 100.0f) * 255.0f;
-	smax = (smax / 100.0f) * 255.0f;                                                 //FALTA CASO DO VERMELHO
+	smax = (smax / 100.0f) * 255.0f;                                                 
 
 	vmin = (vmin / 100.0f) * 255.0f;
 	vmax = (vmax / 100.0f) * 255.0f;
@@ -641,14 +610,6 @@ int vc_hsv_segmentation(IVC* src, IVC* dst, int hmin, int hmax, int smin, int sm
 			s = datasrc[pos_src + 1];
 			v = datasrc[pos_src + 2];
 
-
-
-			/*if (h >= hmin && h <= hmax && s >= smin && s <= smax && v >= vmin && v <= vmax) {
-				datadst[pos_dst]=255;
-			}
-			else {
-				datadst[pos_dst] = 0;
-			}*/
 
 			if (hmin <= hmax)
 				hue_in_range = (h >= hmin && h <= hmax);
@@ -678,7 +639,7 @@ int vc_count_white(IVC* src, int* white) {
 	long int pos;
 	int count = 0;
 
-	//Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if (channels != 1) return 0;
 
@@ -707,7 +668,7 @@ int vc_scale_gray_to_color_palette(IVC* src, IVC* dst) {
 	float r, g, b;
 	float value;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 1) || (dst->channels != 3)) return 0;
@@ -720,17 +681,17 @@ int vc_scale_gray_to_color_palette(IVC* src, IVC* dst) {
 			
 			value = (float)datasrc[pos_src];
 
-			//Azul
+			
 			if (value < 64.0f) b = 255.0f;
 			else if (value < 128.0f) b = (255.0f - ((value - 64.0f) * 4.0f));
 			else b = 0;
 
-			//Verde
+			
 			if (value < 64.0f) g =(value * 4.0f);
 			else if (value < 192.0f)g = 255.0f;
 			else g = (255.0f - (value - 192.0f) * 4.0f);
 
-			//Vermelho
+			
 			if (value < 128.0f)r = 0.0f;
 			else if (value < 192.0f)r =((value - 128.0f) * 4.0f);
 			else r = 255.0f;
@@ -755,7 +716,7 @@ int vc_gray_to_binary(IVC* src, IVC* dst, int threshold) {
 	int x, y;
 	long int pos_src, pos_dst;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 1) || (dst->channels != 1)) return 0;
@@ -793,7 +754,7 @@ int vc_gray_to_binary_global_mean(IVC* src, IVC* dst) {
 	int soma = 0;
 	int media;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 1) || (dst->channels != 1)) return 0;
@@ -905,7 +866,7 @@ int vc_gray_to_binary_bersen(IVC* src, IVC* dst, int kernel, int cmin) {
 
 	int offset = kernel / 2;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 1) || (dst->channels != 1)) return 0;
@@ -916,7 +877,7 @@ int vc_gray_to_binary_bersen(IVC* src, IVC* dst, int kernel, int cmin) {
 			int vmin = 255;
 			int vmax = 0;
 
-			// Percorrer vizinhança
+			
 			for (j = -offset; j <= offset; j++) {
 				for (i = -offset; i <= offset; i++) {
 
@@ -935,9 +896,9 @@ int vc_gray_to_binary_bersen(IVC* src, IVC* dst, int kernel, int cmin) {
 
 			int threshold;
 
-			// Regra Bernsen
+			
 			if ((vmax - vmin) < cmin) {
-				threshold = 128; // baixo contraste
+				threshold = 128; 
 			}
 			else {
 				threshold = (vmin + vmax) / 2;
@@ -972,7 +933,7 @@ int vc_gray_to_binary_niblack(IVC* src, IVC* dst, int kernel, float k) {
 
 	int offset = kernel / 2;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if ((src->channels != 1) || (dst->channels != 1)) return 0;
@@ -1021,7 +982,7 @@ int vc_gray_to_binary_niblack(IVC* src, IVC* dst, int kernel, float k) {
 			variance = variance / count;
 			stddev = sqrt(variance);
 
-			// Threshold Niblack
+			
 			float threshold = mean + k * stddev;
 
 			pos_src = y * bytesperline_src + x * channels_src;
@@ -1053,7 +1014,7 @@ int vc_binary_dilate(IVC* src, IVC* dst, int kernel) {
 
 	int offset = kernel / 2;
 
-	// Verificação de erros
+	
 	if ((src == NULL) || (dst == NULL)) return 0;
 	if ((src->data == NULL) || (dst->data == NULL)) return 0;
 	if ((src->width <= 0) || (src->height <= 0)) return 0;
@@ -1110,7 +1071,7 @@ int vc_binary_erode(IVC* src, IVC* dst, int kernel) {
 
 	int offset = kernel / 2;
 
-	// Verificação de erros
+	
 	if ((src == NULL) || (dst == NULL)) return 0;
 	if ((src->data == NULL) || (dst->data == NULL)) return 0;
 	if ((src->width <= 0) || (src->height <= 0)) return 0;
@@ -1129,7 +1090,7 @@ int vc_binary_erode(IVC* src, IVC* dst, int kernel) {
 					int xx = x + i;
 					int yy = y + j;
 
-					if (xx < 0 || xx >= width || yy < 0 || yy >= height) {   // Se estiver fora atribui preto, se não vai ver os vizinhos
+					if (xx < 0 || xx >= width || yy < 0 || yy >= height) {   
 						found = 1;
 					}
 					else {
@@ -1209,7 +1170,7 @@ int vc_binary_close(IVC* src, IVC* dst, int kernelDilate, int kernelErode) {
 	}
 
 	vc_image_free(temp);
-	return 1;             // Caso corra tudo bem
+	return 1;             
 }
 
 int vc_binary_subtract(IVC* src1, IVC* src2, IVC* dst) {
@@ -1248,7 +1209,6 @@ int vc_binary_subtract(IVC* src1, IVC* src2, IVC* dst) {
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -1258,11 +1218,8 @@ int vc_binary_subtract(IVC* src1, IVC* src2, IVC* dst) {
 
 
 
-// Etiquetagem de blobs
-// src		: Imagem binária de entrada
-// dst		: Imagem grayscale (irá conter as etiquetas)
-// nlabels	: Endereço de memória de uma variável, onde será armazenado o número de etiquetas encontradas.
-// OVC*		: Retorna um array de estruturas de blobs (objectos), com respectivas etiquetas. É necessário libertar posteriormente esta memória.
+
+
 OVC* vc_binary_blob_labelling(IVC* src, IVC* dst, int* nlabels)
 {
 	unsigned char* datasrc = (unsigned char*)src->data;
@@ -1276,28 +1233,25 @@ OVC* vc_binary_blob_labelling(IVC* src, IVC* dst, int* nlabels)
 	long int posX, posA, posB, posC, posD;
 	int labeltable[256] = { 0 };
 	int labelarea[256] = { 0 };
-	int label = 1; // Etiqueta inicial.
+	int label = 1; 
 	int num, tmplabel;
-	OVC* blobs; // Apontador para array de blobs (objectos) que será retornado desta função.
+	OVC* blobs; 
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if ((src->width != dst->width) || (src->height != dst->height) || (src->channels != dst->channels)) return NULL;
 	if (channels != 1) return NULL;
 
-	// Copia dados da imagem binária para imagem grayscale
+	
 	memcpy(datadst, datasrc, bytesperline * height);
 
-	// Todos os pixéis de plano de fundo devem obrigatóriamente ter valor 0
-	// Todos os pixéis de primeiro plano devem obrigatóriamente ter valor 255
-	// Serão atribuídas etiquetas no intervalo [1,254]
-	// Este algoritmo está assim limitado a 254 labels
+
 	for (i = 0, size = bytesperline * height; i < size; i++)
 	{
 		if (datadst[i] != 0) datadst[i] = 255;
 	}
 
-	// Limpa os rebordos da imagem binária
+	
 	for (y = 0; y < height; y++)
 	{
 		datadst[y * bytesperline + 0 * channels] = 0;
@@ -1309,22 +1263,20 @@ OVC* vc_binary_blob_labelling(IVC* src, IVC* dst, int* nlabels)
 		datadst[(height - 1) * bytesperline + x * channels] = 0;
 	}
 
-	// Efectua a etiquetagem
+	
 	for (y = 1; y < height - 1; y++)
 	{
 		for (x = 1; x < width - 1; x++)
 		{
-			// Kernel:
-			// A B C
-			// D X
+			
 
-			posA = (y - 1) * bytesperline + (x - 1) * channels; // A
-			posB = (y - 1) * bytesperline + x * channels; // B
-			posC = (y - 1) * bytesperline + (x + 1) * channels; // C
-			posD = y * bytesperline + (x - 1) * channels; // D
-			posX = y * bytesperline + x * channels; // X
+			posA = (y - 1) * bytesperline + (x - 1) * channels;
+			posB = (y - 1) * bytesperline + x * channels; 
+			posC = (y - 1) * bytesperline + (x + 1) * channels; 
+			posD = y * bytesperline + (x - 1) * channels; 
+			posX = y * bytesperline + x * channels; 
 
-			// Se o pixel foi marcado
+			
 			if (datadst[posX] != 0)
 			{
 				if ((datadst[posA] == 0) && (datadst[posB] == 0) && (datadst[posC] == 0) && (datadst[posD] == 0))
@@ -1337,20 +1289,20 @@ OVC* vc_binary_blob_labelling(IVC* src, IVC* dst, int* nlabels)
 				{
 					num = 255;
 
-					// Se A está marcado
+					
 					if (datadst[posA] != 0) num = labeltable[datadst[posA]];
-					// Se B está marcado, e é menor que a etiqueta "num"
+					
 					if ((datadst[posB] != 0) && (labeltable[datadst[posB]] < num)) num = labeltable[datadst[posB]];
-					// Se C está marcado, e é menor que a etiqueta "num"
+					
 					if ((datadst[posC] != 0) && (labeltable[datadst[posC]] < num)) num = labeltable[datadst[posC]];
-					// Se D está marcado, e é menor que a etiqueta "num"
+					
 					if ((datadst[posD] != 0) && (labeltable[datadst[posD]] < num)) num = labeltable[datadst[posD]];
 
-					// Atribui a etiqueta ao pixel
+					
 					datadst[posX] = num;
 					labeltable[num] = num;
 
-					// Actualiza a tabela de etiquetas
+					
 					if (datadst[posA] != 0)
 					{
 						if (labeltable[datadst[posA]] != num)
@@ -1408,12 +1360,12 @@ OVC* vc_binary_blob_labelling(IVC* src, IVC* dst, int* nlabels)
 		}
 	}
 
-	// Volta a etiquetar a imagem
+	
 	for (y = 1; y < height - 1; y++)
 	{
 		for (x = 1; x < width - 1; x++)
 		{
-			posX = y * bytesperline + x * channels; // X
+			posX = y * bytesperline + x * channels; 
 
 			if (datadst[posX] != 0)
 			{
@@ -1422,10 +1374,7 @@ OVC* vc_binary_blob_labelling(IVC* src, IVC* dst, int* nlabels)
 		}
 	}
 
-	//printf("\nMax Label = %d\n", label);
-
-	// Contagem do número de blobs
-	// Passo 1: Eliminar, da tabela, etiquetas repetidas
+	
 	for (a = 1; a < label - 1; a++)
 	{
 		for (b = a + 1; b < label; b++)
@@ -1433,21 +1382,21 @@ OVC* vc_binary_blob_labelling(IVC* src, IVC* dst, int* nlabels)
 			if (labeltable[a] == labeltable[b]) labeltable[b] = 0;
 		}
 	}
-	// Passo 2: Conta etiquetas e organiza a tabela de etiquetas, para que não hajam valores vazios (zero) entre etiquetas
+	
 	*nlabels = 0;
 	for (a = 1; a < label; a++)
 	{
 		if (labeltable[a] != 0)
 		{
-			labeltable[*nlabels] = labeltable[a]; // Organiza tabela de etiquetas
-			(*nlabels)++; // Conta etiquetas
+			labeltable[*nlabels] = labeltable[a]; 
+			(*nlabels)++;
 		}
 	}
 
-	// Se não há blobs
+	
 	if (*nlabels == 0) return NULL;
 
-	// Cria lista de blobs (objectos) e preenche a etiqueta
+	
 	blobs = (OVC*)calloc((*nlabels), sizeof(OVC));
 	if (blobs != NULL)
 	{
@@ -1471,11 +1420,11 @@ int vc_binary_blob_info(IVC* src, OVC* blobs, int nblobs)
 	int xmin, ymin, xmax, ymax;
 	long int sumx, sumy;
 
-	// Verificação de erros
+	
 	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if (channels != 1) return 0;
 
-	// Conta área de cada blob
+	
 	for (i = 0; i < nblobs; i++)
 	{
 		xmin = width - 1;
@@ -1496,21 +1445,20 @@ int vc_binary_blob_info(IVC* src, OVC* blobs, int nblobs)
 
 				if (data[pos] == blobs[i].label)
 				{
-					// Área
+					
 					blobs[i].area++;
 
-					// Centro de Gravidade
+					
 					sumx += x;
 					sumy += y;
 
-					// Bounding Box
+					
 					if (xmin > x) xmin = x;
 					if (ymin > y) ymin = y;
 					if (xmax < x) xmax = x;
 					if (ymax < y) ymax = y;
 
-					// Perímetro
-					// Se pelo menos um dos quatro vizinhos não pertence ao mesmo label, então é um pixel de contorno
+					
 					if ((data[pos - 1] != blobs[i].label) || (data[pos + 1] != blobs[i].label) || (data[pos - bytesperline] != blobs[i].label) || (data[pos + bytesperline] != blobs[i].label))
 					{
 						blobs[i].perimeter++;
@@ -1519,15 +1467,13 @@ int vc_binary_blob_info(IVC* src, OVC* blobs, int nblobs)
 			}
 		}
 
-		// Bounding Box
+		
 		blobs[i].x = xmin;
 		blobs[i].y = ymin;
 		blobs[i].width = (xmax - xmin) + 1;
 		blobs[i].height = (ymax - ymin) + 1;
 
-		// Centro de Gravidade
-		//blobs[i].xc = (xmax - xmin) / 2;
-		//blobs[i].yc = (ymax - ymin) / 2;
+		
 		blobs[i].xc = sumx / MAX(blobs[i].area, 1);
 		blobs[i].yc = sumy / MAX(blobs[i].area, 1);
 	}
@@ -1545,7 +1491,7 @@ int vc_draw_bounding_box(IVC* image, OVC* blobs, int nblobs)
 	int i, x, y;
 	long int pos;
 
-	// Verificação de erros
+	
 	if ((image == NULL) || (blobs == NULL)) return 0;
 	if ((image->data == NULL) || (nblobs <= 0)) return 0;
 	if ((channels != 1) && (channels != 3)) return 0;
@@ -1566,7 +1512,7 @@ int vc_draw_bounding_box(IVC* image, OVC* blobs, int nblobs)
 		for (x = xmin; x <= xmax; x++)
 		{
 			
-			pos = ymin * bytesperline + x * channels; //LINHA DE CIMA
+			pos = ymin * bytesperline + x * channels; 
 			if (channels == 1)
 			{
 				data[pos] = 255;
@@ -1579,7 +1525,7 @@ int vc_draw_bounding_box(IVC* image, OVC* blobs, int nblobs)
 			}
 
 			
-			pos = ymax * bytesperline + x * channels;  //LINHA DE BAIXO
+			pos = ymax * bytesperline + x * channels;  
 			if (channels == 1)
 			{
 				data[pos] = 255;
@@ -1592,11 +1538,11 @@ int vc_draw_bounding_box(IVC* image, OVC* blobs, int nblobs)
 			}
 		}
 
-		// Linha da esquerda e da direita
+		
 		for (y = ymin; y <= ymax; y++)
 		{
 			
-			pos = y * bytesperline + xmin * channels;  //LINHA DA ESQUERDA
+			pos = y * bytesperline + xmin * channels;  
 			if (channels == 1)
 			{
 				data[pos] = 255;
@@ -1609,7 +1555,7 @@ int vc_draw_bounding_box(IVC* image, OVC* blobs, int nblobs)
 			}
 
 			
-			pos = y * bytesperline + xmax * channels;  //LINHA DA DIREITA
+			pos = y * bytesperline + xmax * channels; 
 			if (channels == 1)
 			{
 				data[pos] = 255;
@@ -1638,7 +1584,7 @@ int vc_draw_center_mass(IVC* image, OVC* blobs, int nblobs, int size)
 	long int pos;
 	int x, y;
 
-	// Verificação de erros
+	
 	if ((image == NULL) || (blobs == NULL)) return 0;
 	if (image->data == NULL) return 0;
 	if (nblobs <= 0) return 0;
@@ -1653,7 +1599,7 @@ int vc_draw_center_mass(IVC* image, OVC* blobs, int nblobs, int size)
 
 		for (k = -size; k <= size; k++)
 		{
-			// Linha horizontal
+			
 			x = xc + k;
 			y = yc;
 
@@ -1673,7 +1619,7 @@ int vc_draw_center_mass(IVC* image, OVC* blobs, int nblobs, int size)
 				}
 			}
 
-			// Linha vertical
+			
 			x = xc;
 			y = yc + k;
 
@@ -1737,7 +1683,7 @@ int vc_gray_histogram_equalization(IVC* src, IVC* dst)
 
 	float cdf_min = 0.0f;
 
-	for (i = 0; i < l; i++)     // o cdf_min é o primeiro valor maior que 0
+	for (i = 0; i < l; i++)     
 	{
 		if (cdf[i] > 0.0f)
 		{
@@ -1774,39 +1720,39 @@ int vc_gray_edge_prewitt(IVC* src, IVC* dst, float th)
 	datadst = dst->data;
 	size = width * height;
 
-	// Percorrer imagem (evitar bordas)
+	
 	for (y = 1; y < height - 1; y++)
 	{
 		for (x = 1; x < width - 1; x++)
 		{
 			i = y * width + x;
 
-			// Gradiente em X (Gx)
+			
 			gx =
 				-datasrc[(y - 1) * width + (x - 1)] + datasrc[(y - 1) * width + (x + 1)] +
 				-datasrc[(y)*width + (x - 1)] + datasrc[(y)*width + (x + 1)] +
 				-datasrc[(y + 1) * width + (x - 1)] + datasrc[(y + 1) * width + (x + 1)];
 
-			// Gradiente em Y (Gy)
+			
 			gy =
 				-datasrc[(y - 1) * width + (x - 1)] - datasrc[(y - 1) * width + (x)] - datasrc[(y - 1) * width + (x + 1)] +
 				datasrc[(y + 1) * width + (x - 1)] + datasrc[(y + 1) * width + (x)] + datasrc[(y + 1) * width + (x + 1)];
 
-			// Magnitude do gradiente
+			
 			magn = (float)sqrt((gx * gx) + (gy * gy));
 
-			// Aplicar threshold
+			
 			if (magn > (th * 255))
-				datadst[i] = 255; // contorno
+				datadst[i] = 255; 
 			else
-				datadst[i] = 0;   // fundo
+				datadst[i] = 0;   
 		}
 	}
 
 	return 1;
 }
 
-int vc_gray_edge_sobel(IVC* src, IVC* dst, float th)  // ANALISAR MELHOR ESTA FUNÇÃO
+int vc_gray_edge_sobel(IVC* src, IVC* dst, float th)  
 {
 	unsigned char* datasrc = (unsigned char*)src->data;
 	unsigned char* datadst = (unsigned char*)dst->data;
@@ -1819,21 +1765,21 @@ int vc_gray_edge_sobel(IVC* src, IVC* dst, float th)  // ANALISAR MELHOR ESTA FU
 	int gx, gy;
 	float magn;
 
-	// Verificações
+	
 	if (src == NULL || dst == NULL) return 0;
 	if (src->data == NULL || dst->data == NULL) return 0;
 	if (src->width <= 0 || src->height <= 0) return 0;
 	if (src->width != dst->width || src->height != dst->height) return 0;
 	if (src->channels != 1 || dst->channels != 1) return 0;
 
-	// Percorrer imagem (evitar bordas)
+	
 	for (y = 1; y < height - 1; y++)
 	{
 		for (x = 1; x < width - 1; x++)
 		{
 			pos = y * bytesperline + x * channels;
 
-			// Sobel Gx
+			
 			gx =
 				-datasrc[(y - 1) * bytesperline + (x - 1) * channels] +
 				datasrc[(y - 1) * bytesperline + (x + 1) * channels] +
@@ -1904,7 +1850,7 @@ int vc_gray_lowpass_mean_filter(IVC* src, IVC* dst, int kernelsize)
 					int xx = x + i;
 					int yy = y + j;
 
-					// bordas
+					
 					if (xx < 0) xx = 0;
 					if (yy < 0) yy = 0;
 					if (xx >= width) xx = width - 1;
@@ -1943,7 +1889,7 @@ int vc_gray_lowpass_median_filter(IVC* src, IVC* dst, int kernelsize)
 	unsigned char* kernelvalues;
 	unsigned char temp;
 
-	// Verificações
+	
 	if (src == NULL || dst == NULL) return 0;
 	if (src->data == NULL || dst->data == NULL) return 0;
 	if (src->width <= 0 || src->height <= 0) return 0;
@@ -1963,7 +1909,7 @@ int vc_gray_lowpass_median_filter(IVC* src, IVC* dst, int kernelsize)
 		{
 			int index = 0;
 
-			// Preencher vetor com vizinhança
+			
 			for (j = -offset; j <= offset; j++)
 			{
 				for (i = -offset; i <= offset; i++)
@@ -1971,7 +1917,7 @@ int vc_gray_lowpass_median_filter(IVC* src, IVC* dst, int kernelsize)
 					int xx = x + i;
 					int yy = y + j;
 
-					// Clamp bordas
+					
 					if (xx < 0) xx = 0;
 					if (yy < 0) yy = 0;
 					if (xx >= width) xx = width - 1;
@@ -1997,7 +1943,7 @@ int vc_gray_lowpass_median_filter(IVC* src, IVC* dst, int kernelsize)
 				}
 			}
 
-			// Mediana
+			
 			pos_dst = y * bytesperline_dst + x * channels_dst;
 			datadst[pos_dst] = kernelvalues[size / 2];
 		}
@@ -2024,7 +1970,7 @@ int vc_gray_lowpass_gaussian_filter(IVC* src, IVC* dst)
 	int offset = 2;
 	int sum;
 
-	// Kernel do slide (5x5)
+	
 	int kernel[5][5] = {
 		{1, 4, 7, 4, 1},
 		{4,16,26,16, 4},
@@ -2033,10 +1979,10 @@ int vc_gray_lowpass_gaussian_filter(IVC* src, IVC* dst)
 		{1, 4, 7, 4, 1}
 	};
 
-	// Soma dos pesos = 273
+	
 	int weight = 273;
 
-	// Verificações
+	
 	if ((src == NULL) || (dst == NULL)) return 0;
 	if ((width != dst->width) || (height != dst->height)) return 0;
 	if ((channels != 1) || (dst->channels != 1)) return 0;
@@ -2092,7 +2038,7 @@ int vc_gray_highpass_filter(IVC* src, IVC* dst)
 	int offset = 1;
 	int sum;
 
-	// Verificações
+	
 	if ((src == NULL) || (dst == NULL)) return 0;
 	if ((width != dst->width) || (height != dst->height)) return 0;
 	if ((channels != 1) || (dst->channels != 1)) return 0;
@@ -2120,7 +2066,7 @@ int vc_gray_highpass_filter(IVC* src, IVC* dst)
 
 			pos = y * bytesperline + x * channels;
 
-			// Clamp para [0,255]
+			
 			if (sum < 0) sum = 0;
 			if (sum > 255) sum = 255;
 
@@ -2143,7 +2089,7 @@ int vc_gray_highpass_filter_enhance(IVC* src, IVC* dst, int gain)
 	long int posA, posB, posC, posD, posX, posE, posF, posG, posH;
 	int laplace, value;
 
-	// Verificações
+	
 	if ((src == NULL) || (dst == NULL)) return 0;
 	if ((width != dst->width) || (height != dst->height)) return 0;
 	if (channels != 1 || dst->channels != 1) return 0;
@@ -2152,7 +2098,7 @@ int vc_gray_highpass_filter_enhance(IVC* src, IVC* dst, int gain)
 	{
 		for (x = 1; x < width - 1; x++)
 		{
-			// Vizinhança 3x3
+			
 			posA = (y - 1) * bytesperline + (x - 1) * channels;
 			posB = (y - 1) * bytesperline + x * channels;
 			posC = (y - 1) * bytesperline + (x + 1) * channels;
@@ -2163,20 +2109,17 @@ int vc_gray_highpass_filter_enhance(IVC* src, IVC* dst, int gain)
 			posG = (y + 1) * bytesperline + x * channels;
 			posH = (y + 1) * bytesperline + (x + 1) * channels;
 
-			// Máscara Laplaciana (8 vizinhos)
-			// -1 -1 -1
-			// -1  8 -1
-			// -1 -1 -1
+			
 
 			laplace =
 				(-datasrc[posA] - datasrc[posB] - datasrc[posC]
 					- datasrc[posD] + 8 * datasrc[posX] - datasrc[posE]
 					- datasrc[posF] - datasrc[posG] - datasrc[posH]);
 
-			// Realce: original + ganho * laplaciano
+			
 			value = datasrc[posX] + gain * laplace;
 
-			// Clamp para [0,255]
+			
 			if (value < 0) value = 0;
 			if (value > 255) value = 255;
 
@@ -2222,9 +2165,9 @@ int vc_image_diff(IVC* current, IVC* prev, IVC* diff)
 	return 1;
 }
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//        FUNÇÕES: Laranjas - TP
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
 
 int vc_laranja_completa_na_imagem(OVC blob, int width, int height, int margem)
 {
